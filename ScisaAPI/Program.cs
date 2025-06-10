@@ -1,3 +1,7 @@
+using ScisaAPI.Models;
+using ScisaAPI.Utils;
+using ScisaAPI.Utils.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -13,6 +17,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
+
+builder.Services.Configure<SmtpConfiguracion>(builder.Configuration.GetSection("SmtpConfiguracion"));
+builder.Services.AddScoped<IServicioCorreo, ServicioCorreo>();
 
 var app = builder.Build();
 

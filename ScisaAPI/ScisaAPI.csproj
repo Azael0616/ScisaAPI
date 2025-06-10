@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="8.0.5" />
+    <PackageReference Include="MailKit" Version="4.12.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 

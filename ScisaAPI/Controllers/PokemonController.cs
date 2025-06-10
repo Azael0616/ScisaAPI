@@ -3,17 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using ScisaAPI.Models;
 using ScisaAPI.Models.Filtros;
 using ScisaAPI.Utils;
+using ScisaAPI.Utils.Interfaces;
 using System.Linq;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ScisaAPI.Controllers
 {
     public class PokemonController : Controller
     {
         private readonly HttpClient _http;
-        public PokemonController(IHttpClientFactory httpClientFactory)
+        private readonly IServicioCorreo _servicioCorreo;
+        public PokemonController(IHttpClientFactory httpClientFactory, IServicioCorreo servicioCorreo)
         {
             _http = httpClientFactory.CreateClient();
+            _servicioCorreo = servicioCorreo;
         }
         //Petición principal
         [HttpGet]
@@ -30,7 +34,7 @@ namespace ScisaAPI.Controllers
             else
             {
                 //Obtiene las primeras 20 especies para el dropdown
-                listaEspecies = await Utils.Utils.Obtener_filtro_Especies(_http);
+                listaEspecies = await Utils.Peticiones.Obtener_filtro_Especies(_http);
                 //Guardar la lista en una variable de sesion
                 HttpContext.Session.GuardarObjetoEnSession("ListaEspecies", listaEspecies);
             }                            
@@ -44,7 +48,7 @@ namespace ScisaAPI.Controllers
                     TempData["Alerta"] = "Su petición no puede ser completada. Vuelva a intentarlo.";
                     return RedirectToAction("Listado");
                 }
-                Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_Nombre(_http, filtro.Nombre.Trim().ToLower());
+                Pokemon _pokemon = await Utils.Peticiones.Obtener_pokemon_por_Nombre(_http, filtro.Nombre.Trim().ToLower());
                 lista.Clear();
                 if(_pokemon.Nombre != "" && _pokemon.Nombre != null)
                 {
@@ -59,7 +63,7 @@ namespace ScisaAPI.Controllers
             }
             else if(filtro.EspecieID != 0)
             {
-                Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, filtro.EspecieID);
+                Pokemon _pokemon = await Utils.Peticiones.Obtener_pokemon_por_ID(_http, filtro.EspecieID);
                 lista.Clear();
                 if (_pokemon.Nombre != "" && _pokemon.Nombre != null)
                 {
@@ -87,7 +91,7 @@ namespace ScisaAPI.Controllers
                     //Obtiene los primeros 20 pokemon
                     for (int i = 0; i < 20; i++)
                     {
-                        Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, (i + 1));
+                        Pokemon _pokemon = await Utils.Peticiones.Obtener_pokemon_por_ID(_http, (i + 1));
                         lista.Add(_pokemon);
                     }
                     //Guardar la lista en una variable de sesion
@@ -131,6 +135,30 @@ namespace ScisaAPI.Controllers
                 TempData["Alerta"] = "No hay datos para exportar.";
                 return RedirectToAction("Listado");
             }                
+        }
+        [HttpGet]
+        public async Task<IActionResult> EnviarCorreo()
+        {
+            //Validación si hay pokemon por busqueda
+            var listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("PokemonPorBusqueda");
+            if (listaPokemonEnSesion == null)
+            {
+                //Validación para obtener el listado pokemon de la sesion
+                listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("ListaPokemonPaginada");
+            }
+            if (listaPokemonEnSesion != null && listaPokemonEnSesion.Count != 0)
+            {
+                //Envía el correo y manda una alerta
+                await _servicioCorreo.EnviarCorreo(listaPokemonEnSesion);
+                TempData["Alerta"] = "Correo enviado correctamente.";
+                return RedirectToAction("Listado");
+            }
+            else
+            {
+                //En caso que no haya información
+                TempData["Alerta"] = "No hay datos para enviar.";
+                return RedirectToAction("Listado");
+            }
         }
     }
 }
