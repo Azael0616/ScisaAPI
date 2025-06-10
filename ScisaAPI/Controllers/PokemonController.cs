@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ScisaAPI.Models;
 using ScisaAPI.Models.Filtros;
+using ScisaAPI.Utils;
 using System.Linq;
 using System.Text.Json;
 
@@ -19,16 +20,38 @@ namespace ScisaAPI.Controllers
         public async Task<IActionResult> Listado(Filtro filtro)
         {
             List<Pokemon> lista = new List<Pokemon>();
-            //Obtiene las primeras 20 especies para el dropdown
-            List<PokemonEspecie> listaEspecies = await Utils.Utils.Obtener_filtro_Especies(_http);
-            ViewBag.ListaEspecies = listaEspecies;
-            //Obtiene los primeros 10 pokemon
-            for (int i = 0; i < 20; i++)
+            List<PokemonEspecie> listaEspecies = new List<PokemonEspecie>();
+            //Validación si ya está cargada la lista de especies
+            var listaEspeciesEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<PokemonEspecie>>("ListaEspecies");
+            if(listaEspeciesEnSesion != null && listaEspeciesEnSesion?.Count>0)
             {
-                Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, (i + 1));
-                lista.Add(_pokemon);
-            }            
-
+                listaEspecies = listaEspeciesEnSesion;
+            }
+            else
+            {
+                //Obtiene las primeras 20 especies para el dropdown
+                listaEspecies = await Utils.Utils.Obtener_filtro_Especies(_http);
+                //Guardar la lista en una variable de sesion
+                HttpContext.Session.GuardarObjetoEnSession("ListaEspecies", listaEspecies);
+            }                            
+            ViewBag.ListaEspecies = listaEspecies;
+            //Validación si ya está cargada la lista de especies
+            var listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("ListaPokemon");
+            if (listaPokemonEnSesion != null && listaPokemonEnSesion?.Count > 0)
+            {
+                lista = listaPokemonEnSesion;
+            }
+            else
+            {
+                //Obtiene los primeros 20 pokemon
+                for (int i = 0; i < 20; i++)
+                {
+                    Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, (i + 1));
+                    lista.Add(_pokemon);
+                }
+                //Guardar la lista en una variable de sesion
+                HttpContext.Session.GuardarObjetoEnSession("ListaPokemon", lista);
+            }                        
             //Para la paginación
             int total = lista.Count;
             int registrosPorPagina = 5;
