@@ -49,7 +49,7 @@
         {
             <tr>
                 <td>@p.Id</td>
-                <td>@p.Nombre</td>
+                <td><a href="#" class="ver-detalles" data-id="@p.Id">@p.Nombre</a></td>
                 <td>
                     <img src="@p.Imagen" alt="@p.Nombre" style="width: 64px; height: 64px;" />
                 </td>
@@ -73,12 +73,60 @@
         }
     </ul>
 </nav>
-@section Scripts {
+<!--Modal para los detalles de pokemon-->
+<div class="modal fade" id="pokemonModal" tabindex="-1" aria-labelledby="pokemonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pokemonModalLabel">Detalles del Pokémon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
+                <p><strong>Altura:</strong> <span id="modalAltura"></span></p>
+                <p><strong>Peso:</strong> <span id="modalPeso"></span></p>
+                <p><strong>Habilidad:</strong> <span id="modalHabilidad"></span></p>
+                <img id="modalImagen" src="" alt="modalNombre" class="d-block mx-auto" />
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {    
     <script>
+        //Alerta
         @if (TempData["Alerta"] != null)
         {
             var mensaje = @Html.Raw(Json.Serialize(TempData["Alerta"]));
             <text>alert(@mensaje);</text>
-        }
+        }        
+    </script>
+    <script>
+        //Llenado de modal al darle clic al nombre de pokemon
+        document.querySelectorAll('.ver-detalles').forEach(link => {
+            link.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+
+                try {
+                    //Se hace la peticion
+                    const response = await fetch(`/Pokemon/ObtenerDetalle/${id}`);
+                    if (!response.ok) throw new Error("No se pudo obtener el Pokemon.");
+
+                    const data = await response.json();                    
+
+                    // Se asignan los valores al modal
+                    document.getElementById('modalNombre').textContent = data.nombre;
+                    document.getElementById('modalAltura').textContent = data.altura;
+                    document.getElementById('modalPeso').textContent = data.peso;
+                    document.getElementById('modalHabilidad').textContent = data.habilidad;
+                    document.getElementById('modalImagen').src = data.imagen;
+
+                    const modal = new bootstrap.Modal(document.getElementById('pokemonModal'));
+                    modal.show();
+                } catch (err) {
+                    alert("Ocurrió un error al cargar los detalles.");
+                }
+            });
+        });
     </script>
 }

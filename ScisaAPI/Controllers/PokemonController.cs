@@ -4,9 +4,6 @@ using ScisaAPI.Models;
 using ScisaAPI.Models.Filtros;
 using ScisaAPI.Utils;
 using ScisaAPI.Utils.Interfaces;
-using System.Linq;
-using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ScisaAPI.Controllers
 {
@@ -159,6 +156,13 @@ namespace ScisaAPI.Controllers
                 TempData["Alerta"] = "No hay datos para enviar.";
                 return RedirectToAction("Listado");
             }
+        }
+        //Obtiene los detalles del pokemon para el modal
+        [HttpGet]
+        public async Task<PokemonDetalle> ObtenerDetalle(int id)
+        {
+            PokemonDetalle _pokemon = await Utils.Peticiones.Obtener_detalle_pokemon_por_ID(_http,id);
+            return _pokemon;
         }
     }
 }
