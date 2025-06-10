@@ -38,6 +38,12 @@ namespace ScisaAPI.Controllers
             //En caso de tener Nombre o EspecieID, hará busqueda nuevamente. Nota: en caso de tener ambos campos, el Nombre tiene PRIORIDAD
             if (filtro.Nombre != null && filtro.Nombre.Trim() != "")
             {
+                //Validacion de contenido maliciosos en el nombre
+                if (Utils.Utils.TieneContenidoMalicioso(filtro.Nombre.Trim()))
+                {
+                    TempData["Alerta"] = "Su petición no puede ser completada. Vuelva a intentarlo.";
+                    return RedirectToAction("Listado");
+                }
                 Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_Nombre(_http, filtro.Nombre.Trim().ToLower());
                 lista.Clear();
                 if(_pokemon.Nombre != "" && _pokemon.Nombre != null)
@@ -122,7 +128,7 @@ namespace ScisaAPI.Controllers
             else
             {
                 //En caso que no haya información
-                TempData["Alerta"] = "No hay datos para exportar";
+                TempData["Alerta"] = "No hay datos para exportar.";
                 return RedirectToAction("Listado");
             }                
         }

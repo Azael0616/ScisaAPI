@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Listado de Pokémon";
-    var listaEspecies = ViewBag.ListaEspecies as List<PokemonEspecie>;
+    var listaEspecies = ViewBag.ListaEspecies as List<PokemonEspecie>;    
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -76,9 +76,8 @@
     <script>
         @if (TempData["Alerta"] != null)
         {
-                <text>
-                    alert("@TempData["Alerta"]");
-                </text>
+            var mensaje = @Html.Raw(Json.Serialize(TempData["Alerta"]));
+            <text>alert(@mensaje);</text>
         }
     </script>
 }
