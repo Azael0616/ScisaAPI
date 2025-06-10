@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ScisaAPI.Models;
 using ScisaAPI.Models.Filtros;
+using System.Linq;
 using System.Text.Json;
 
 namespace ScisaAPI.Controllers
@@ -18,15 +19,25 @@ namespace ScisaAPI.Controllers
         public async Task<IActionResult> Listado(Filtro filtro)
         {
             List<Pokemon> lista = new List<Pokemon>();
+            //Obtiene las primeras 20 especies para el dropdown
             List<PokemonEspecie> listaEspecies = await Utils.Utils.Obtener_filtro_Especies(_http);
             ViewBag.ListaEspecies = listaEspecies;
-            for (int i = 0; i < 10; i++)
+            //Obtiene los primeros 10 pokemon
+            for (int i = 0; i < 20; i++)
             {
                 Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, (i + 1));
                 lista.Add(_pokemon);
-            }
-            
-            return View(lista);
+            }            
+
+            //Para la paginación
+            int total = lista.Count;
+            int registrosPorPagina = 5;
+            ViewBag.TotalPaginas = (int)Math.Ceiling(total / (double)registrosPorPagina);
+            ViewBag.PaginaActual = filtro.Pagina;
+
+            List<Pokemon> listaPaginada = lista.Skip((filtro.Pagina - 1) * registrosPorPagina).Take(registrosPorPagina).ToList();
+
+            return View(listaPaginada);
         }
     }
 }

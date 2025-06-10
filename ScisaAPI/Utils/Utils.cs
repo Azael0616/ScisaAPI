@@ -91,12 +91,14 @@ namespace ScisaAPI.Utils
         }
         public static void GuardarObjetoEnSession<T>(this ISession session, string key, T value)
         {
+            //Convierte la información del objeto en JSON
             var json = JsonSerializer.Serialize(value);
             session.SetString(key, json);
         }
 
         public static T? ObtenerObjetoDeSession<T>(this ISession session, string key)
         {
+            //Convierte la información del JSON en objeto
             var json = session.GetString(key);
             return json == null ? default : JsonSerializer.Deserialize<T>(json);
         }

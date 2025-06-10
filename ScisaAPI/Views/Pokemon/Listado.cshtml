@@ -3,23 +3,24 @@
 @{
     ViewData["Title"] = "Listado de Pokémon";
     var listaEspecies = ViewBag.ListaEspecies as List<PokemonEspecie>;
-    var filtro = Context.Request.Query["Filtro"];
+    var filtro = Context.Request.Query["filtro"];
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="get" asp-action="Listado">
     <div class="form-group row">
-        <input type="text" name="Filtro.Nombre" value="@Context.Request.Query["Filtro.Nombre"]" placeholder="Buscar por nombre" class="col-md-4" />
+        <input type="text" name="filtro.Nombre" value="@Context.Request.Query["filtro.Nombre"]" placeholder="Buscar por nombre" class="col-md-4" />
 
-        <select name="Filtro.EspecieID" class="col-md-4">
+        <select name="filtro.EspecieID" class="col-md-4">
         <option value="">TODO</option>
             @{
                 if(listaEspecies != null)
                 {
                     foreach (var e in listaEspecies)
                     {
-                        <option value="@e.Id">
+                        var opcionSeleccionada = (e.Id == Context.Request.Query["filtro.EspecieID"]) ? "selected" : "";
+                        <option value="@e.Id" opcionSeleccionada>
                             @e.Nombre
                         </option>
                     }
@@ -52,3 +53,18 @@
         }
     </tbody>
 </table>
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+        {
+            var nombre = Context.Request.Query["filtro.Nombre"];
+            var especieID = Context.Request.Query["filtro.EspecieID"];
+
+            var url = Url.Action("Listado", "Pokemon") + $"?filtro.Nombre={nombre}&filtro.EspecieID={especieID}&filtro.Pagina={i}";
+
+            <li class="page-item @(i == (int)ViewBag.PaginaActual ? "active" : "")">
+                <a class="page-link" href="@url">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
