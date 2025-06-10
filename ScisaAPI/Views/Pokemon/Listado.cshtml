@@ -3,16 +3,15 @@
 @{
     ViewData["Title"] = "Listado de Pokémon";
     var listaEspecies = ViewBag.ListaEspecies as List<PokemonEspecie>;
-    var filtro = Context.Request.Query["filtro"];
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="get" asp-action="Listado">
     <div class="form-group row">
-        <input type="text" name="filtro.Nombre" value="@Context.Request.Query["filtro.Nombre"]" placeholder="Buscar por nombre" class="col-md-4" />
+        <input type="text" name="filtro.Nombre" value="@Context.Request.Query["filtro.Nombre"]" placeholder="Buscar por nombre" class="col-md-3" />
 
-        <select name="filtro.EspecieID" class="col-md-4">
+        <select name="filtro.EspecieID" class="col-md-3">
         <option value="">TODO</option>
             @{
                 if(listaEspecies != null)
@@ -30,8 +29,9 @@
             }
     </select>
 
-        <button type="submit" class="col-md-2 btn-success">Buscar</button>
+        <button type="submit" class="col-md-2 btn btn-info" style="color:white">Buscar</button>
         <a href="@Url.Action("Listado", "Pokemon")" class="col-md-2 btn btn-primary">Limpiar</a>
+        <a href="@Url.Action("ExportarExcel", "Pokemon")" class="col-md-2 btn btn-success">Descargar Excel</a>
     </div>
 </form>
 
@@ -72,3 +72,13 @@
         }
     </ul>
 </nav>
+@section Scripts {
+    <script>
+        @if (TempData["Alerta"] != null)
+        {
+                <text>
+                    alert("@TempData["Alerta"]");
+                </text>
+        }
+    </script>
+}

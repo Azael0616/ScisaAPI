@@ -9,7 +9,7 @@ namespace ScisaAPI.Utils
         public static async Task<Pokemon> Obtener_pokemon_por_ID(HttpClient http, int id)
         {
             Pokemon _pokemon = new Pokemon();
-            //Se realiza la petición
+            //Se realiza la petición asincrona
             var respuesta = await http.GetAsync("https://pokeapi.co/api/v2/pokemon/" + id);
             //En caso de que haya error, retorna un objeto vacío.
             if (!respuesta.IsSuccessStatusCode)
@@ -33,7 +33,7 @@ namespace ScisaAPI.Utils
         public static async Task<Pokemon> Obtener_pokemon_por_Nombre(HttpClient http, string nombrePokemon)
         {
             Pokemon _pokemon = new Pokemon();
-            //Se realiza la petición
+            //Se realiza la petición asincrona
             var respuesta = await http.GetAsync("https://pokeapi.co/api/v2/pokemon/" + nombrePokemon);
             //En caso de que haya error, retorna un objeto vacío.
             if (!respuesta.IsSuccessStatusCode)
@@ -58,7 +58,7 @@ namespace ScisaAPI.Utils
         public static async Task<Pokemon> Obtener_pokemon_por_Especie(HttpClient http, int id)
         {
             Pokemon _pokemon = new Pokemon();
-            //Se realiza la petición
+            //Se realiza la petición asincrona
             var respuesta = await http.GetAsync("https://pokeapi.co/api/v2/pokemon-species/" + id);
             //En caso de que haya error, retorna un objeto vacío.
             if (!respuesta.IsSuccessStatusCode)
@@ -80,7 +80,7 @@ namespace ScisaAPI.Utils
         public static async Task<List<PokemonEspecie>> Obtener_filtro_Especies(HttpClient http)
         {
             List<PokemonEspecie> listaDeEspecies = new List<PokemonEspecie>();
-            //Se realiza la petición
+            //Se realiza la petición asincrona
             var respuesta = await http.GetAsync("https://pokeapi.co/api/v2/pokemon-species");
             //En caso de que haya error, retorna un objeto vacío.
             if (!respuesta.IsSuccessStatusCode)

@@ -41,18 +41,36 @@ namespace ScisaAPI.Controllers
                 Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_Nombre(_http, filtro.Nombre.Trim().ToLower());
                 lista.Clear();
                 if(_pokemon.Nombre != "" && _pokemon.Nombre != null)
+                {
                     lista.Add(_pokemon);
+                    HttpContext.Session.GuardarObjetoEnSession("PokemonPorBusqueda", lista);
+                }
+                else
+                {
+                    //Limpia la variable de sesión de pokémon encontrado por busqueda
+                    HttpContext.Session.Remove("PokemonPorBusqueda");
+                }
             }
             else if(filtro.EspecieID != 0)
             {
                 Pokemon _pokemon = await Utils.Utils.Obtener_pokemon_por_ID(_http, filtro.EspecieID);
                 lista.Clear();
                 if (_pokemon.Nombre != "" && _pokemon.Nombre != null)
+                {
                     lista.Add(_pokemon);
+                    HttpContext.Session.GuardarObjetoEnSession("PokemonPorBusqueda", lista);
+                }
+                else
+                {
+                    //Limpia la variable de sesión de pokémon encontrado por busqueda
+                    HttpContext.Session.Remove("PokemonPorBusqueda");
+                }
             }
             else
             {
-                //Validación si ya está cargada la lista de especies
+                //Limpia la variable de sesión de pokémon encontrado por busqueda
+                HttpContext.Session.Remove("PokemonPorBusqueda");
+                //Validación si ya está cargada la lista de pokemones
                 var listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("ListaPokemon");
                 if (listaPokemonEnSesion != null && listaPokemonEnSesion?.Count > 0)
                 {
@@ -78,7 +96,35 @@ namespace ScisaAPI.Controllers
 
             List<Pokemon> listaPaginada = lista.Skip((filtro.Pagina - 1) * registrosPorPagina).Take(registrosPorPagina).ToList();
 
+            HttpContext.Session.GuardarObjetoEnSession("ListaPokemonPaginada", listaPaginada);
+
             return View(listaPaginada);
+        }
+        [HttpGet]
+        public IActionResult ExportarExcel()
+        {
+            byte[] datos;
+            //Validación si hay pokemon por busqueda
+            var listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("PokemonPorBusqueda");
+            if(listaPokemonEnSesion == null)
+            {
+                //Validación para obtener el listado pokemon de la sesion
+                listaPokemonEnSesion = HttpContext.Session.ObtenerObjetoDeSession<List<Pokemon>>("ListaPokemonPaginada");
+            }
+            if(listaPokemonEnSesion != null && listaPokemonEnSesion.Count != 0)
+            {
+                //Si existe un pokemon por busqueda, sólo se exportará ese, en caso contrario, se exportarán los que se encuentren en la paginación actual
+                datos = Utils.ExportarExcel.ExportarListadoPokemon(listaPokemonEnSesion);
+                return File(datos,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "ListadoPokemon.xlsx");
+            }
+            else
+            {
+                //En caso que no haya información
+                TempData["Alerta"] = "No hay datos para exportar";
+                return RedirectToAction("Listado");
+            }                
         }
     }
 }
