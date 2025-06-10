@@ -1,0 +1,54 @@
+﻿@model IEnumerable<ScisaAPI.Models.Pokemon>
+
+@{
+    ViewData["Title"] = "Listado de Pokémon";
+    var listaEspecies = ViewBag.ListaEspecies as List<PokemonEspecie>;
+    var filtro = Context.Request.Query["Filtro"];
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="get" asp-action="Listado">
+    <div class="form-group row">
+        <input type="text" name="Filtro.Nombre" value="@Context.Request.Query["Filtro.Nombre"]" placeholder="Buscar por nombre" class="col-md-4" />
+
+        <select name="Filtro.EspecieID" class="col-md-4">
+        <option value="">TODO</option>
+            @{
+                if(listaEspecies != null)
+                {
+                    foreach (var e in listaEspecies)
+                    {
+                        <option value="@e.Id">
+                            @e.Nombre
+                        </option>
+                    }
+                }                
+            }
+    </select>
+
+        <button type="submit" class="col-md-4">Buscar</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>            
+            <th>Imagen</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Nombre</td>
+                <td>
+                    <img src="@p.Imagen" alt="@p.Nombre" style="width: 64px; height: 64px;" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
