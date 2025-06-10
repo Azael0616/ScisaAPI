@@ -21,8 +21,8 @@ namespace ScisaAPI.Utils
             var root = doc.RootElement;
 
             //Se asigna la información al objeto
-            var nombre = root.GetProperty("name").GetString();
-            var imagen = root.GetProperty("sprites").GetProperty("front_default").GetString();
+            string? nombre = root.GetProperty("name").GetString();
+            string? imagen = root.GetProperty("sprites").GetProperty("front_default").GetString();
 
             _pokemon.Id = id;
             _pokemon.Nombre = nombre != null ? nombre.ToUpper() : "";
@@ -45,13 +45,35 @@ namespace ScisaAPI.Utils
             var root = doc.RootElement;
 
             //Se asigna la información al objeto
-            var id = root.GetProperty("id").GetString();
-            var nombre = root.GetProperty("name").GetString();
-            var imagen = root.GetProperty("sprites").GetProperty("front_default").GetString();
+            int id = root.GetProperty("order").GetInt32();
+            string? nombre = root.GetProperty("name").GetString();
+            string? imagen = root.GetProperty("sprites").GetProperty("front_default").GetString();
 
-            _pokemon.Id = id != null ? int.Parse(id) : 0;
+            _pokemon.Id = id != 0 ? id : 0;
             _pokemon.Nombre = nombre != null ? nombre.ToUpper() : "";
             _pokemon.Imagen = imagen != null ? imagen : "";
+
+            return _pokemon;
+        }
+        public static async Task<Pokemon> Obtener_pokemon_por_Especie(HttpClient http, int id)
+        {
+            Pokemon _pokemon = new Pokemon();
+            //Se realiza la petición
+            var respuesta = await http.GetAsync("https://pokeapi.co/api/v2/pokemon-species/" + id);
+            //En caso de que haya error, retorna un objeto vacío.
+            if (!respuesta.IsSuccessStatusCode)
+                return _pokemon;
+
+            //Se lee la información del JSON
+            var contenido = await respuesta.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(contenido);
+            var root = doc.RootElement;
+
+            //Se asigna la información al objeto            
+            string? nombre = root.GetProperty("name").GetString();            
+
+            _pokemon.Id = id;
+            _pokemon.Nombre = nombre != null ? nombre.ToUpper() : "";            
 
             return _pokemon;
         }
@@ -80,7 +102,7 @@ namespace ScisaAPI.Utils
                 {
                     i++;
                     PokemonEspecie _especie = new PokemonEspecie();
-                    var nombre = item.GetProperty("name").GetString();
+                    string? nombre = item.GetProperty("name").GetString();
 
                     _especie.Nombre = nombre != null ? nombre.ToUpper() : "";
                     _especie.Id = i;
